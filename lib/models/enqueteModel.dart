@@ -1,35 +1,47 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+
 class Enquete {
-  final String titre;
+  final String surveyId; 
+  final String title;
   final String description;
-  final DateTime dateDebut;
-  final DateTime dateFin;
-  final String enqueteurId;
+  final String status;
+  final String startDate;
+  final String endDate;
+  final String investigatorId; // Rendu optionnel avec une valeur par défaut
 
   Enquete({
-    required this.titre,
+    required this.surveyId, 
+    required this.title,
     required this.description,
-    required this.dateDebut,
-    required this.dateFin,
-    required this.enqueteurId,
+    required this.status,
+    required this.startDate,
+    required this.endDate,
+    this.investigatorId = "", // Valeur par défaut pour le rendre optionnel
   });
 
-  factory Enquete.fromJson(Map<String, dynamic> json) {
+  factory Enquete.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
     return Enquete(
-      titre: json['titre'],
-      description: json['description'],
-      dateDebut: DateTime.parse(json['date_debut']),
-      dateFin: DateTime.parse(json['date_fin']),
-      enqueteurId: json['enqueteur'],
+      surveyId: doc.id, 
+      title: data['title'] ?? 'Survey not found',
+      description: data['description'] ?? '',
+      status: data['status'] ?? '',
+      startDate: data['startDate'] ?? '',
+      endDate: data['endDate'] ?? '',
+      investigatorId: data['investigatorId'] ?? '', 
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'titre': titre,
+      'surveyId': surveyId, 
+      'title': title,
       'description': description,
-      'date_debut': dateDebut.toIso8601String(),
-      'date_fin': dateFin.toIso8601String(),
-      'enqueteur': enqueteurId,
+      'status': status,
+      'startDate': startDate,
+      'endDate': endDate,
+    'investigatorId': investigatorId, 
     };
   }
 }

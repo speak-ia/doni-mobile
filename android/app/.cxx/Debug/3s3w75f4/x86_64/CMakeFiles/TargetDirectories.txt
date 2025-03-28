@@ -1,0 +1,2 @@
+/home/mohpython/doni-mobile/android/app/.cxx/Debug/3s3w75f4/x86_64/CMakeFiles/edit_cache.dir
+/home/mohpython/doni-mobile/android/app/.cxx/Debug/3s3w75f4/x86_64/CMakeFiles/rebuild_cache.dir

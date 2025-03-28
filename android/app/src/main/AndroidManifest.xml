@@ -30,6 +30,15 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+                    <!-- <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="TA_CLE_API_GOOGLE_MAPS_ICI" />
+
+        <meta-data
+            android:name="android.permission-group.LOCATION"
+            android:value="true"/> -->
+
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
@@ -42,4 +51,8 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+        <!-- Permissions pour accéder à la localisation -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 </manifest>

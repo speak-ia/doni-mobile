@@ -1,42 +1,44 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:donidata/models/enqueteModel.dart';
+import 'package:donidata/provider/userProvider.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 
-// import 'package:donidata/models/enqueteModel.dart';
-// import 'package:donidata/services/serviceApi.dart';
-// import 'package:flutter/material.dart';
+class EnqueteProvider extends ChangeNotifier {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  List<Enquete> _enquetes = [];
+  bool _isLoading = false;
 
-// class EnqueteProvider with ChangeNotifier {
-//   final ApiService _apiService = ApiService();
-//   List<Enquete> _enquetes = [];
-//   Enquete? _selectedEnquete;
-//   bool _isLoading = false;
+  List<Enquete> get enquetes => _enquetes;
+  bool get isLoading => _isLoading;
 
-//   List<Enquete> get enquetes => _enquetes;
-//   Enquete? get selectedEnquete => _selectedEnquete;
-//   bool get isLoading => _isLoading;
+  Future<void> fetchEnquetes(BuildContext context) async {
+    _isLoading = true;
+    notifyListeners();
 
-//   // Charger toutes les enquêtes
-//   Future<void> getAllEnquetes() async {
-//     _isLoading = true;
-//     notifyListeners();
+    try {
+      QuerySnapshot snapshot = await _firestore.collection('surveys').get();
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final investigatorId = userProvider.user?.uid ?? ""; 
 
-//     try {
-//       final response = await _apiService.get('/enquetes/');
-//       _enquetes = (response.data as List)
-//           .map((json) => Enquete.fromJson(json))
-//           .toList();
-//     } catch (e) {
-//       print('Erreur lors du chargement des enquêtes: $e');
-//       rethrow;
-//     } finally {
-//       _isLoading = false;
-//       notifyListeners();
-//     }
-//   }
+      _enquetes = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return Enquete(
+          surveyId: doc.id, 
+          title: data['title'] ?? 'Survey not found',
+          description: data['description'] ?? '',
+          status: data['status'] ?? '',
+          startDate: data['startDate'] ?? '',
+          endDate: data['endDate'] ?? '',
+          investigatorId: data['investigatorId'] ?? investigatorId, 
+        );
+      }).toList();
+    } catch (e) {
+      print("Erreur lors de la récupération des enquêtes: $e");
+    }
 
-//   Future<void> applyForEnquete(String? enqueteId) async {
-//     if (enqueteId == null) throw Exception('ID de l\'enquête invalide');
-//     // Add your API call or database logic here
-//     // For example:
-//     // await _api.postApplication(enqueteId);
-//   }
-// }
+    _isLoading = false;
+    notifyListeners();
+  }
+}

@@ -49,11 +49,10 @@ class _LoginPageState extends State<LoginPage> {
 
         showToast(message: "Utilisateur connecté avec succès");
 
-        // Redirection vers la page principale
         Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MyBottomNavigationBar()),
-        );
+                    context,
+                    MaterialPageRoute(builder: (context) => MyBottomNavigationBar()),
+                  );
       } else {
         showToast(message: "Une erreur est survenue lors de la connexion.");
       }

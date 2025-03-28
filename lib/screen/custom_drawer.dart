@@ -30,8 +30,8 @@ class CustomDrawer extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 40,
-                        backgroundImage: user?.photoUrl.isNotEmpty == true
-                            ? NetworkImage(user!.photoUrl)
+                        backgroundImage: (user?.photoUrl?.isNotEmpty ?? false) == true
+                            ? NetworkImage(user!.photoUrl!)
                             : const AssetImage('assets/images/logo.png')
                                 as ImageProvider,
                       ),

@@ -1,0 +1,1 @@
+/home/mohpython/doni-mobile/build/app/intermediates/cxx/Debug/3s3w75f4/obj/x86_64

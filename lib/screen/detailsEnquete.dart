@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:donidata/screen/QuestionnaireScreen.dart';
 import 'package:donidata/screen/profil_screen.dart';
+import 'package:donidata/provider/enquete_provider.dart';
+import 'package:donidata/provider/userProvider.dart';
+import 'package:donidata/models/enqueteModel.dart'; // Assure-toi d'importer le modèle Enquete
 
 class EnqueteDetailPage extends StatefulWidget {
   final Map<String, String> enquete;
@@ -11,10 +16,46 @@ class EnqueteDetailPage extends StatefulWidget {
 }
 
 class _EnqueteDetailPageState extends State<EnqueteDetailPage> {
-  bool _isApplying = false;
+  bool isApplied = false;
+  bool isAccepted = false;
+
+  void _applyForSurvey() {
+    setState(() {
+      isApplied = true;
+    });
+
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        isAccepted = true;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Votre candidature a été acceptée ! Vous pouvez répondre aux questions."),
+        ),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    final user = userProvider.user;
+    final enqueteProvider = Provider.of<EnqueteProvider>(context, listen: false); // Évite de réécouter ici
+
+    // Trouver l'enquête correspondante dans EnqueteProvider en utilisant le titre ou une autre propriété unique
+    final currentEnquete = enqueteProvider.enquetes.firstWhere(
+      (enquete) => enquete.title == widget.enquete['title'],
+      orElse: () => Enquete(
+        surveyId: "",
+        title: widget.enquete['title'] ?? "Survey not found",
+        description: widget.enquete['description'] ?? "",
+        status: "",
+        startDate: "",
+        endDate: "",
+        investigatorId: user?.uid ?? "",
+      ),
+    );
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue[100],
@@ -30,16 +71,18 @@ class _EnqueteDetailPageState extends State<EnqueteDetailPage> {
               );
             },
             child: CircleAvatar(
-              backgroundImage: AssetImage("assets/images/logo.png"),
+              backgroundImage: user?.photoUrl != null
+                  ? NetworkImage(user!.photoUrl!)
+                  : AssetImage("assets/images/logo.png") as ImageProvider,
               radius: 30,
             ),
           ),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
-              'Moussa DIARRA',
+              user?.fullname ?? 'Nom inconnu',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -61,18 +104,14 @@ class _EnqueteDetailPageState extends State<EnqueteDetailPage> {
               Icons.message,
               color: Colors.black,
             ),
-            onPressed: () {
-              // Action pour l'icône de message (simulée)
-            },
+            onPressed: () {},
           ),
           IconButton(
             icon: const Icon(
               Icons.menu,
               color: Colors.black,
             ),
-            onPressed: () {
-              // Action pour l'icône de menu (simulée)
-            },
+            onPressed: () {},
           ),
         ],
       ),
@@ -81,7 +120,7 @@ class _EnqueteDetailPageState extends State<EnqueteDetailPage> {
         child: Column(
           children: [
             Text(
-              widget.enquete['titre'] ?? "Titre de l'enquête",
+              widget.enquete['title'] ?? "Titre de l'enquête",
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -96,45 +135,47 @@ class _EnqueteDetailPageState extends State<EnqueteDetailPage> {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _isApplying
+              onPressed: isApplied
                   ? null
-                  : () {
-                      setState(() {
-                        _isApplying = true;
-                      });
-                      Future.delayed(const Duration(seconds: 2), () {
-                        setState(() {
-                          _isApplying = false;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("Candidature simulée avec succès"),
-                          ),
-                        );
-                      });
-                    },
+                  : _applyForSurvey,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0A1B34),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 50, vertical: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
               ),
-              child: _isApplying
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Text(
-                      'APPLIQUER',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
-                    ),
+              child: Text(
+                isApplied ? "Candidature envoyée" : "Postuler",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+              ),
             ),
+            SizedBox(height: 20),
+            if (isApplied && !isAccepted)
+              Text("Votre candidature est en attente de validation par l'admin.",
+                  style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+            if (isAccepted)
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => QuestionnaireScreen(surveyId: currentEnquete.surveyId), // Utilise le surveyId de l'enquête actuelle
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                ),
+                child: Text(
+                  "Répondre aux questions",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
           ],
         ),
       ),
